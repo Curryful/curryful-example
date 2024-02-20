@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.github.curryful</groupId>
+    <artifactId>example</artifactId>
+    <version>0.0.1</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+    </properties>
+
+    <name>Curryful Example</name>
+    <description>An example application to show off how to work with Curryful</description>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/license/mit/</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Nico Lerchl</name>
+            <email>nico@lerchl.one</email>
+            <organization>Curryful</organization>
+            <organizationUrl>https://github.com/Curryful</organizationUrl>
+        </developer>
+    </developers>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.10.1</version>
+				<configuration>
+					<source>21</source>
+					<target>21</target>
+				</configuration>
+            </plugin>
+			<plugin>
+            	<groupId>org.codehaus.mojo</groupId>
+            	<artifactId>exec-maven-plugin</artifactId>
+            	<version>3.1.0</version>
+            	<configuration>
+                	<mainClass>io.github.curryful.example.Main</mainClass>
+            	</configuration>
+        	</plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+		<dependency>
+			<groupId>io.github.curryful</groupId>
+			<artifactId>commons</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.curryful</groupId>
+			<artifactId>rest</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+    </dependencies>
+</project>
