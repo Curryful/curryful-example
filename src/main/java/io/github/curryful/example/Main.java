@@ -23,16 +23,16 @@ public class Main {
 			new HttpResponse<String>(HttpResponseCode.OK, "Hello, world!");
 
 	private static final RestFunction sayHelloName = _context ->
-			new HttpResponse<String>(HttpResponseCode.OK, "Hello, " + _context.getPathParameters().get("name") + "!");
+			new HttpResponse<String>(HttpResponseCode.OK, "Hello, " + _context.getPathParameters().get("name").getValue() + "!");
 
 	private static final RestFunction getNumbers = context -> {
 		var numbers = new ArrayList<>(NUMBERS);
 		var order = context.getQueryParameters().get("order");
 
-		if (order != null) {
+		if (order.hasValue()) {
 			Collections.sort(numbers);
 
-			if (order.equals("descending")) {
+			if (order.getValue().equals("descending")) {
 				Collections.reverse(numbers);
 			}
 		}
