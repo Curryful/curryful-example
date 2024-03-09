@@ -1,52 +1,74 @@
 package io.github.curryful.example;
 
-import static io.github.curryful.rest.Router.listen;
+import static io.github.curryful.example.Hello.sayHello;
+import static io.github.curryful.example.Hello.sayHelloName;
+import static io.github.curryful.example.Hello.secureHello;
+import static io.github.curryful.example.Numbers.getNumbers;
+import static io.github.curryful.rest.Server.listen;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.Map.of;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Base64;
+import java.util.Map;
 
 import io.github.curryful.rest.Destination;
 import io.github.curryful.rest.Endpoint;
 import io.github.curryful.rest.HttpMethod;
-import io.github.curryful.rest.HttpResponse;
-import io.github.curryful.rest.HttpResponseCode;
-import io.github.curryful.rest.RestFunction;
+import io.github.curryful.rest.middleware.PostMiddleware;
+import io.github.curryful.rest.middleware.PreMiddleware;
 
 public class Main {
 
-	private static final List<Integer> NUMBERS = Arrays.asList(5, 2, 10, 13, 1, 4);
+	private static final Map<String, String> USERS = unmodifiableMap(of(
+		"admin", "admin123",
+		"user", "password"
+	));
 
-	private static final RestFunction sayHello = _context ->
-			new HttpResponse<String>(HttpResponseCode.OK, "Hello, world!");
+	public static final PreMiddleware basicAuth = context -> {
+		var authHeader = context.getHeaders().get("Authorization");
 
-	private static final RestFunction sayHelloName = _context ->
-			new HttpResponse<String>(HttpResponseCode.OK, "Hello, " + _context.getPathParameters().get("name").getValue() + "!");
-
-	private static final RestFunction getNumbers = context -> {
-		var numbers = new ArrayList<>(NUMBERS);
-		var order = context.getQueryParameters().get("order");
-
-		if (order.hasValue()) {
-			Collections.sort(numbers);
-
-			if (order.getValue().equals("descending")) {
-				Collections.reverse(numbers);
-			}
+		if (!authHeader.hasValue()) {
+			return context;
 		}
 
-		var body = numbers.stream().map(i -> i.toString()).collect(Collectors.joining(", "));
-		return new HttpResponse<String>(HttpResponseCode.OK, body);
+		var authParts = authHeader.getValue().split(" ");
+
+		if (authParts.length != 2 || !authParts[0].equals("Basic")) {
+			return context;
+		}
+
+		var credentials = new String(Base64.getDecoder().decode(authParts[1]));
+		var credentialParts = credentials.split(":");
+
+		if (credentialParts.length != 2) {
+			return context;
+		}
+
+		var username = credentialParts[0];
+		var password = credentialParts[1];
+
+		if (!USERS.containsKey(username) || !USERS.get(username).equals(password)) {
+			return context;
+		}
+
+		context.getHeaders().put("X-Authenticated-User", username);
+		return context;
 	};
 
 	public static void main(String[] args) {
+		var preMiddleware = new ArrayList<PreMiddleware>();
+		preMiddleware.add(basicAuth);
+
 		var endpoints = new ArrayList<Endpoint>();
 		endpoints.add(Endpoint.of(new Destination(HttpMethod.GET, "/hello"), sayHello));
 		endpoints.add(Endpoint.of(new Destination(HttpMethod.GET, "/hello/:name"), sayHelloName));
+		endpoints.add(Endpoint.of(new Destination(HttpMethod.GET, "/secure/hello"), secureHello));
 		endpoints.add(Endpoint.of(new Destination(HttpMethod.GET, "/numbers"), getNumbers));
 
-		listen.apply(endpoints).apply(8080);
+		var postMiddleware = new ArrayList<PostMiddleware>();
+
+		listen.apply(preMiddleware).apply(endpoints).apply(postMiddleware).apply(8080);
 	}
 }
+
