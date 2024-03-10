@@ -17,7 +17,7 @@ public class Hello {
 		var username = context.getHeaders().get("X-Authenticated-User");
 
 		if (!username.hasValue()) {
-			return new HttpResponse<String>(HttpResponseCode.UNAUTHORIZED, "Unauthorized");
+			return new HttpResponse<String>(HttpResponseCode.UNAUTHORIZED);
 		}
 
 		return new HttpResponse<String>(HttpResponseCode.OK, "Hello, " + username.getValue() + "!");
