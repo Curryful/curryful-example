@@ -58,7 +58,7 @@ public class Main {
 		headers.put("X-Authenticated-User", username);
 		return HttpContext.of(context.getMethod(), context.getActualUri(), context.getFormalUri(),
 				context.getPathParameters(), context.getQueryParameters(), headers,
-				context.getAddress(), context.getContent());
+				context.getAddress(), context.getBody());
 	};
 
 	public static void main(String[] args) {
