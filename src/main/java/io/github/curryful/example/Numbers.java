@@ -1,5 +1,6 @@
 package io.github.curryful.example;
 
+import static io.github.curryful.rest.HttpResponseCode.OK;
 import static java.util.Collections.unmodifiableList;
 import static java.util.List.of;
 
@@ -9,7 +10,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.github.curryful.rest.HttpResponse;
-import io.github.curryful.rest.HttpResponseCode;
 import io.github.curryful.rest.RestFunction;
 
 public class Numbers {
@@ -29,7 +29,7 @@ public class Numbers {
 		}
 
 		var body = numbers.stream().map(i -> i.toString()).collect(Collectors.joining(", "));
-		return new HttpResponse<String>(HttpResponseCode.OK, body);
+		return HttpResponse.of(OK, body);
 	};
 }
 

@@ -12,8 +12,10 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Map;
 
+import io.github.curryful.commons.collections.MutableMaybeHashMap;
 import io.github.curryful.rest.Destination;
 import io.github.curryful.rest.Endpoint;
+import io.github.curryful.rest.HttpContext;
 import io.github.curryful.rest.HttpMethod;
 import io.github.curryful.rest.middleware.PostMiddleware;
 import io.github.curryful.rest.middleware.PreMiddleware;
@@ -52,8 +54,11 @@ public class Main {
 			return context;
 		}
 
-		context.getHeaders().put("X-Authenticated-User", username);
-		return context;
+		var headers = MutableMaybeHashMap.of(context.getHeaders());
+		headers.put("X-Authenticated-User", username);
+		return HttpContext.of(context.getMethod(), context.getActualUri(), context.getFormalUri(),
+				context.getPathParameters(), context.getQueryParameters(), headers,
+				context.getAddress(), context.getContent());
 	};
 
 	public static void main(String[] args) {
@@ -61,10 +66,10 @@ public class Main {
 		preMiddleware.add(basicAuth);
 
 		var endpoints = new ArrayList<Endpoint>();
-		endpoints.add(Endpoint.of(new Destination(HttpMethod.GET, "/hello"), sayHello));
-		endpoints.add(Endpoint.of(new Destination(HttpMethod.GET, "/hello/:name"), sayHelloName));
-		endpoints.add(Endpoint.of(new Destination(HttpMethod.GET, "/secure/hello"), secureHello));
-		endpoints.add(Endpoint.of(new Destination(HttpMethod.GET, "/numbers"), getNumbers));
+		endpoints.add(Endpoint.of(Destination.of(HttpMethod.GET, "/hello"), sayHello));
+		endpoints.add(Endpoint.of(Destination.of(HttpMethod.GET, "/hello/:name"), sayHelloName));
+		endpoints.add(Endpoint.of(Destination.of(HttpMethod.GET, "/secure/hello"), secureHello));
+		endpoints.add(Endpoint.of(Destination.of(HttpMethod.GET, "/numbers"), getNumbers));
 
 		var postMiddleware = new ArrayList<PostMiddleware>();
 
