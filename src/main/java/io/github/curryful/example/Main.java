@@ -15,8 +15,8 @@ import java.util.Map;
 import io.github.curryful.commons.collections.MutableMaybeHashMap;
 import io.github.curryful.rest.Destination;
 import io.github.curryful.rest.Endpoint;
-import io.github.curryful.rest.HttpContext;
-import io.github.curryful.rest.HttpMethod;
+import io.github.curryful.rest.http.HttpContext;
+import io.github.curryful.rest.http.HttpMethod;
 import io.github.curryful.rest.middleware.PostMiddleware;
 import io.github.curryful.rest.middleware.PreMiddleware;
 
