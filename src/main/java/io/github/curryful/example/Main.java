@@ -5,27 +5,29 @@ import static io.github.curryful.example.Hello.sayHelloName;
 import static io.github.curryful.example.Hello.secureHello;
 import static io.github.curryful.example.Numbers.getNumbers;
 import static io.github.curryful.rest.Server.listen;
-import static java.util.Collections.unmodifiableMap;
-import static java.util.Map.of;
 
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Map;
 
+import io.github.curryful.commons.collections.ImmutableArrayList;
+import io.github.curryful.commons.collections.ImmutableMaybeHashMap;
+import io.github.curryful.commons.collections.MutableArrayList;
 import io.github.curryful.commons.collections.MutableMaybeHashMap;
 import io.github.curryful.rest.Destination;
 import io.github.curryful.rest.Endpoint;
 import io.github.curryful.rest.http.HttpContext;
 import io.github.curryful.rest.http.HttpMethod;
-import io.github.curryful.rest.middleware.PostMiddleware;
 import io.github.curryful.rest.middleware.PreMiddleware;
 
 public class Main {
 
-	private static final Map<String, String> USERS = unmodifiableMap(of(
-		"admin", "admin123",
-		"user", "password"
-	));
+	private static final ImmutableMaybeHashMap<String, String> USERS;
+
+	static {
+		MutableMaybeHashMap<String, String> users = MutableMaybeHashMap.empty();
+		users.put("admin", "admin");
+		users.put("user", "password123");
+		USERS = users;
+	}
 
 	public static final PreMiddleware basicAuth = context -> {
 		var authHeader = context.getHeaders().get("Authorization");
@@ -50,7 +52,8 @@ public class Main {
 		var username = credentialParts[0];
 		var password = credentialParts[1];
 
-		if (!USERS.containsKey(username) || !USERS.get(username).equals(password)) {
+		var dbPassword = USERS.get(username);
+		if (!dbPassword.hasValue() || !dbPassword.getValue().equals(password)) {
 			return context;
 		}
 
@@ -62,18 +65,16 @@ public class Main {
 	};
 
 	public static void main(String[] args) {
-		var preMiddleware = new ArrayList<PreMiddleware>();
+		MutableArrayList<PreMiddleware> preMiddleware = MutableArrayList.empty();
 		preMiddleware.add(basicAuth);
 
-		var endpoints = new ArrayList<Endpoint>();
+		MutableArrayList<Endpoint> endpoints = MutableArrayList.empty();
 		endpoints.add(Endpoint.of(Destination.of(HttpMethod.GET, "/hello"), sayHello));
 		endpoints.add(Endpoint.of(Destination.of(HttpMethod.GET, "/hello/:name"), sayHelloName));
 		endpoints.add(Endpoint.of(Destination.of(HttpMethod.GET, "/secure/hello"), secureHello));
 		endpoints.add(Endpoint.of(Destination.of(HttpMethod.GET, "/numbers"), getNumbers));
 
-		var postMiddleware = new ArrayList<PostMiddleware>();
-
-		listen.apply(preMiddleware).apply(endpoints).apply(postMiddleware).apply(8080);
+		listen.apply(preMiddleware).apply(endpoints).apply(ImmutableArrayList.empty()).apply(8080);
 	}
 }
 

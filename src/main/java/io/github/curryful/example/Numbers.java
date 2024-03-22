@@ -1,35 +1,43 @@
 package io.github.curryful.example;
 
-import static io.github.curryful.rest.HttpResponseCode.OK;
-import static java.util.Collections.unmodifiableList;
-import static java.util.List.of;
+import static io.github.curryful.rest.http.HttpContentType.TEXT_PLAIN;
+import static io.github.curryful.rest.http.HttpResponseCode.OK;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
-import io.github.curryful.rest.HttpResponse;
+import io.github.curryful.commons.collections.ImmutableArrayList;
+import io.github.curryful.commons.collections.MutableArrayList;
 import io.github.curryful.rest.RestFunction;
+import io.github.curryful.rest.http.HttpResponse;
 
 public class Numbers {
 
-	private static final List<Integer> NUMBERS = unmodifiableList(of(5, 2, 10, 13, 1, 4));
+	private static final ImmutableArrayList<Integer> NUMBERS;
+
+	static {
+		MutableArrayList<Integer> numbers = MutableArrayList.empty();
+		numbers.add(3);
+		numbers.add(1);
+		numbers.add(4);
+		numbers.add(1);
+		numbers.add(5);
+		numbers.add(9);
+		numbers.add(2);
+		NUMBERS = numbers;
+	}
 
 	public static final RestFunction getNumbers = context -> {
-		var numbers = new ArrayList<>(NUMBERS);
+		var numbers = MutableArrayList.of(NUMBERS);
 		var order = context.getQueryParameters().get("order");
 
-		if (order.hasValue()) {
-			Collections.sort(numbers);
-
-			if (order.getValue().equals("descending")) {
-				Collections.reverse(numbers);
-			}
-		}
+		Comparator<Integer> comparator = order.hasValue() && order.getValue().equals("ascending") ?
+				Integer::compare : (a, b) -> Integer.compare(b, a);
+		numbers = numbers.stream().sorted(comparator)
+				.collect(MutableArrayList::empty, MutableArrayList::add, MutableArrayList::addAll);
 
 		var body = numbers.stream().map(i -> i.toString()).collect(Collectors.joining(", "));
-		return HttpResponse.of(OK, body);
+		return HttpResponse.of(OK, body, TEXT_PLAIN);
 	};
 }
 
