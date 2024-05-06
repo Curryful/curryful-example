@@ -74,7 +74,11 @@ public class Main {
 		endpoints.add(Endpoint.of(Destination.of(HttpMethod.GET, "/secure/hello"), secureHello));
 		endpoints.add(Endpoint.of(Destination.of(HttpMethod.GET, "/numbers"), getNumbers));
 
-		listen.apply(preMiddleware).apply(endpoints).apply(ImmutableArrayList.empty()).apply(8080);
+		listen.apply(System.out::println)
+				.apply(preMiddleware)
+				.apply(endpoints)
+				.apply(ImmutableArrayList.empty())
+				.apply(8080);
 	}
 }
 
